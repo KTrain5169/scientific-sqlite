@@ -1,0 +1,10 @@
+fastapi==0.111.0
+python-dotenv==1.1.0
+requests==2.32.3
+pydantic==2.7.3
+pydantic-settings==2.7.1
+websockets==15.0.1
+
+# formatting
+flake8==7.2.0
+autopep8==2.3.2

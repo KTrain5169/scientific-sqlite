@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Scientific-SQLite{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>Scientific-SQLite</h1>
+        <nav>
+            <a href="/">Home</a> |
+            <a href="/sample">Sample</a>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>&copy; 2025 Scientific-SQLite Project</p>
+    </footer>
+</body>
+</html>
