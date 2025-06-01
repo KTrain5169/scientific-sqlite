@@ -1,0 +1,16 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}CMS Docs{% endblock %}
+
+{% block content %}
+  <h2>Documentation Collection</h2>
+  <ul>
+    {% for doc in docs %}
+      <li>
+        <strong>{{ doc.metadata.title }}</strong> - {{ doc.metadata.description }}
+        <br>
+        <a href="/docs/{{ doc.filename }}">View</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

@@ -1,0 +1,13 @@
+name: "Validate Frontmatter"
+description: "Validates the frontmatter for Markdown files within content collections."
+branding:
+  icon: "check-circle"
+  color: "green"
+inputs:
+  content-directory:
+    description: "The base directory for content collections."
+    required: false
+    default: "content"
+runs:
+  using: "node20"
+  main: "dist/index.js"

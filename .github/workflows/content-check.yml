@@ -1,0 +1,19 @@
+name: Content Frontmatter Check
+
+on:
+  push:
+    paths:
+      - "content/**"
+  pull_request:
+    paths:
+      - "content/**"
+
+jobs:
+  validate-frontmatter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Run frontmatter validator
+        uses: ./.github/actions/validate-frontmatter

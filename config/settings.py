@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     ENABLE_WEBSOCKETS: bool = True
     LOG_EXTRA_INFO: bool = True
 
+    # CMS schema validation
+    # Valid values are "off", "warn", and "enforce"
+    CMS_SCHEMA_VALIDATION: str = "off"
+
     class Config:
         env_file = ".env"
 
