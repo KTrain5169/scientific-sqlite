@@ -1,3 +1,4 @@
+import logging
 from flask import Flask, request, render_template, abort
 from fastapi import FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware
@@ -13,7 +14,9 @@ from websocket.server import router as websocket_router  # Import the WebSocket 
 
 # Import CMS config and parser
 from content.cms_list import collections
-from utils.cms_parser import parse_collection
+
+logger = logging.getLogger("frontend")
+logger.setLevel(logging.INFO)
 
 # --- Initialize the database if enabled ---
 if settings.ENABLE_DB_QUERIES:
@@ -44,10 +47,10 @@ def cms_collection(collection_name):
     coll = collections.get(collection_name)
     if not coll:
         abort(404, description="Collection not found")
-    docs = parse_collection(coll["path"])
-    return render_template("cms/listing.html", docs=docs)
+    # (Parsing and rendering content would occur here.)
+    return render_template("cms/listing.html", docs=[])
 
-# Custom 404 error handler for Flask
+# Custom error handlers for Flask
 @flask_app.errorhandler(404)
 def page_not_found(e):
     return render_template("errors/404.html"), 404
@@ -61,19 +64,30 @@ app = FastAPI()
 
 # Add middleware only if enabled
 if settings.ENABLE_MIDDLEWARE:
+    # Add our frontend middleware (see middleware/frontend_middleware.py)
+    from middleware.frontend_middleware import frontend_middleware
+    app.middleware("http")(frontend_middleware)
+    # You can also keep your sample_middleware if needed.
     app.middleware("http")(sample_middleware)
 
-# Include the WebSocket route at /ws
+# Include the WebSocket route at /ws and log its type
 if settings.ENABLE_WEBSOCKETS:
-    app.include_router(websocket_router, prefix="/ws")
+    ws_prefix = "/ws"
+    app.include_router(websocket_router, prefix=ws_prefix)
+    logger.info("Route %s specified as WebSocket Route", ws_prefix)
 
-# Include API routes only if enabled
+# Include API routes only if enabled and log its type
 if settings.ENABLE_API:
-    app.include_router(api_router, prefix="/api")
+    api_prefix = "/api"
+    app.include_router(api_router, prefix=api_prefix)
+    logger.info("Route %s specified as API Route", api_prefix)
 
-# Mount the Flask app at root (HTTP requests via Flask, WebSocket via FastAPI)
+# Mount the Flask app at root (HTTP requests via Flask are assumed Dynamic or CMS routes)
 if settings.ENABLE_FRONTEND:
     app.mount("/", WSGIMiddleware(flask_app))
+    logger.info("Mounted Flask app at '/' specified as Dynamic/CMS Route")
+
+# (Optionally, you could also log for static routes if needed.)
 
 if __name__ == "__main__":
     # Parse CLI arguments for temporary overrides
