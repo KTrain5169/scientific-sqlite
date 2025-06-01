@@ -135,5 +135,5 @@ if __name__ == "__main__":
         host=args.host,
         port=args.port,
         reload=args.reload,
-        reload_excludes=[".git/*",".github/*",".*","logs/","*.db","README.md","LICENSE","requirements.txt"]
+        reload_excludes=[".git",".github",".*","logs","*.db","README.md","LICENSE","requirements.txt"]
     )
