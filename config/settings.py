@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     ENABLE_DB_QUERIES: bool = True
     ENABLE_WEBSOCKETS: bool = True
     LOG_EXTRA_INFO: bool = True
+    LOG_TO_FILE: bool = False
 
     # CMS schema validation
     # Valid values are "off", "warn", and "enforce"
