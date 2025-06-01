@@ -1,0 +1,8 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ doc.metadata.title }}{% endblock %}
+
+{% block content %}
+  <h1>{{ doc.metadata.title }}</h1>
+  <div>{{ doc.body | safe }}</div>
+{% endblock %}

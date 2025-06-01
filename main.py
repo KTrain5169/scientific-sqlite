@@ -65,6 +65,22 @@ def cms_collection(collection_name):
                            collection_name=collection_key,
                            collection_base=collection_base)
 
+@flask_app.route("/cms/<collection_name>/<path:item_path>")
+def cms_item(collection_name, item_path):
+    # Find the collection key in a case-insensitive manner
+    collection_key = next((k for k in collections.keys() if k.lower() == collection_name.lower()), None)
+    if not collection_key:
+        abort(404, description="Collection not found")
+    coll = collections[collection_key]
+    # Parse the entire collection
+    docs = parse_collection(coll["path"])
+    # Look for a document with a matching filename
+    doc = next((doc for doc in docs if doc["filename"].lstrip("/") == item_path), None)
+    if not doc:
+        abort(404, description="Content item not found")
+    # Render a template (for example, cms/content.html) for the individual item
+    return render_template("cms/content.html", doc=doc, collection_name=collection_key)
+
 # Custom error handlers for Flask
 @flask_app.errorhandler(404)
 def page_not_found(e):

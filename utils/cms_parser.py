@@ -1,11 +1,11 @@
 import os
 import json
 import frontmatter
-from typing import List, Dict, Any
 import importlib.util
-
+from typing import List, Dict, Any
 from config.settings import settings
 from pydantic import BaseModel
+import markdown
 
 def load_schema(collection_path: str) -> Any:
     """
@@ -29,69 +29,66 @@ def load_schema(collection_path: str) -> Any:
 
 def parse_collection(collection_path: str) -> List[Dict[str, Any]]:
     """
-    Recursively parse Markdown (or MDX/Markdoc) files in the collection_path directory.
-    Files with .md or .mdx extensions are processed.
-    Returns a list of documents with extracted frontmatter, content and a computed URL path.
+    Recursively parse Markdown files in the collection_path directory.
+    Files with .md extension are processed. Returns a list of document
+    dictionaries with frontmatter metadata, compiled HTML content, and a computed URL path.
     """
     docs = []
     schema = load_schema(collection_path)
     
     for root, dirs, files in os.walk(collection_path):
-        for filename in files:
-            # Skip schema files
-            if filename.startswith("schema"):
+        for file in files:
+            ext = os.path.splitext(file)[1].lower()
+            # Process only Markdown files
+            if ext != ".md":
                 continue
-            ext = os.path.splitext(filename)[1].lower()
-            if ext not in [".md", ".mdx"]:
-                continue
-            file_path = os.path.join(root, filename)
+            file_path = os.path.join(root, file)
             with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
-    
+            
             post = frontmatter.loads(content)
             data = post.metadata
             body = post.content
-            
-            # Validate against schema if available and if CMS_SCHEMA_VALIDATION is not set to "off"
+
+            # Validate against schema if available and if CMS_SCHEMA_VALIDATION is not "off"
             if schema and callable(schema):
                 try:
-                    # Assuming schema is a Pydantic model class
                     validated = schema(**data)
                     if isinstance(validated, BaseModel):
                         data = validated.dict()
                     else:
-                        # Fallback to using __dict__ if available.
                         data = getattr(validated, "__dict__", data)
                 except Exception as e:
-                    message = f"Schema validation error for file {file_path}: {e}"
+                    msg = f"Schema validation error for file {file_path}: {e}"
                     if settings.CMS_SCHEMA_VALIDATION.lower() == "enforce":
-                        raise ValueError(message)
+                        raise ValueError(msg)
                     elif settings.CMS_SCHEMA_VALIDATION.lower() == "warn":
-                        print("WARNING:", message)
-                    # If "off", ignore validation errors
+                        print("WARNING:", msg)
             
-            # Compute the file's relative path to the collection folder
+            # Compile the Markdown content to HTML
+            compiled_body = markdown.markdown(body)
+            
+            # Compute the relative URL path
             rel_path = os.path.relpath(file_path, collection_path)
-            # Remove the original extension
-            rel_path_no_ext = os.path.splitext(rel_path)[0]
-            # Normalize path to use forward slashes for URL construction
-            rel_path_no_ext = rel_path_no_ext.replace(os.sep, "/")
-            
-            # If the file name isn't "index", convert it to a directory-based route.
-            # For example: v1.md becomes v1/index.html 
+            rel_path_no_ext = os.path.splitext(rel_path)[0].replace(os.sep, "/")
             base_name = os.path.basename(rel_path_no_ext)
-            if base_name != "index":
+            
+            if base_name == "index":
+                # For index file, use the directory path (empty string for collection root)
+                url_path = os.path.dirname(rel_path_no_ext) or ""
+            else:
+                # Otherwise, build directory-based URL: folder/filename/
                 dir_part = os.path.dirname(rel_path_no_ext)
                 if dir_part:
-                    url_path = f"{dir_part}/{base_name}/index.html"
+                    url_path = f"{dir_part}/{base_name}/"
                 else:
-                    url_path = f"{base_name}/index.html"
-            else:
-                url_path = f"{rel_path_no_ext}.html"
-    
+                    url_path = f"{base_name}"
+            
             docs.append({
                 "filename": url_path,
                 "metadata": data,
-                "body": body,
+                "body": compiled_body,
+                "source": file_path
             })
+            
     return docs
