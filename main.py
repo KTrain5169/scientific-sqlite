@@ -1,3 +1,4 @@
+import os
 import logging
 from flask import Flask, request, render_template, abort
 from fastapi import FastAPI
@@ -49,7 +50,13 @@ def cms_collection(collection_name):
         abort(404, description="Collection not found")
     # Use the CMS parser to load the documents for this collection.
     docs = parse_collection(coll["path"])
-    return render_template("cms/listing.html", docs=docs)
+    # Filter docs: require that if a 'published' field exists in metadata it must be True.
+    filtered_docs = [doc for doc in docs if doc.get("metadata", {}).get("published", True)]
+    # Automatically compute collection_base from the collection path.
+    collection_base = os.path.basename(os.path.normpath(coll["path"]))
+    return render_template("cms/listing.html", docs=filtered_docs,
+                           collection_name=collection_name,
+                           collection_base=collection_base)
 
 # Custom error handlers for Flask
 @flask_app.errorhandler(404)
@@ -84,7 +91,7 @@ if settings.ENABLE_FRONTEND:
     logger.info("Mounted Flask app at '/' specified as Dynamic/CMS Route")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run Scientific-SQLite Server with temporary config overrides")
+    parser = argparse.ArgumentParser(description="Run Scientific SQLite Server with temporary config overrides")
     parser.add_argument("--host", type=str, help="Override the host", default=settings.FASTAPI_HOST)
     parser.add_argument("--port", type=int, help="Override the port", default=settings.FASTAPI_PORT)
     parser.add_argument("--reload", action="store_true", help="Enable auto reload", default=settings.RELOAD)
