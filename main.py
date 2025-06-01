@@ -27,6 +27,12 @@ def sample(name):
         return render_template("sample.html", greeting=name, method="POST")
     return render_template("sample.html", greeting=name, method="GET")
 
+@flask_app.route("/sample", methods=["GET", "POST"])
+def sample_index():
+    if request.method == "POST":
+        return render_template("sample.html", greeting="there", method="POST")
+    return render_template("sample.html", greeting="there", method="GET")
+
 # Custom 404 error handler
 @flask_app.errorhandler(404)
 def page_not_found(e):
@@ -43,13 +49,13 @@ app = FastAPI()
 if settings.ENABLE_MIDDLEWARE:
     app.middleware("http")(sample_middleware)
 
-# Include API routes only if enabled
-if settings.ENABLE_API:
-    app.include_router(api_router, prefix="/api")
-
 # Include the WebSocket route at /ws
 if settings.ENABLE_WEBSOCKETS:
     app.include_router(websocket_router, prefix="/ws")
+
+# Include API routes only if enabled
+if settings.ENABLE_API:
+    app.include_router(api_router, prefix="/api")
 
 # Mount the Flask app if enabled
 if settings.ENABLE_FRONTEND:

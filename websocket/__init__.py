@@ -1,0 +1,1 @@
+"""Scientific SQLite WebSocket"""

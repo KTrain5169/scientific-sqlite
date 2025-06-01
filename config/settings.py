@@ -2,8 +2,8 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     DB_FILE: str = "database.db"
-    FASTAPI_HOST: str = "localhost"  # changed default host to localhost
-    FASTAPI_PORT: int = 8080         # changed default port to 8080
+    FASTAPI_HOST: str = "localhost"
+    FASTAPI_PORT: int = 8080
     RELOAD: bool = True
 
     # Toggle settings for various parts of the server
