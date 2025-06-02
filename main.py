@@ -4,6 +4,7 @@ import argparse
 import uvicorn
 from typing import List
 from datetime import datetime
+from typing import Dict, Any
 
 from flask import Flask, request, render_template, abort
 from fastapi import FastAPI
@@ -29,6 +30,16 @@ if settings.ENABLE_DB_QUERIES:
 
 # --- Setup Flask (Dynamic Frontend & CMS) ---
 flask_app = Flask(__name__)  # Flask will use the './templates' folder by default
+
+def _get_cms_parsed(collection_name: str) -> List[Dict[str, Any]]:
+    # Find the collection key by comparing lower-case values
+    collection_key = next((k for k in collections.keys() if k.lower() == collection_name.lower()), None)
+    if not collection_key:
+        abort(404, description="Collection not found")
+    coll = collections[collection_key]
+    # Use the CMS parser to load the documents for this collection.
+    docs = parse_collection(coll["path"])
+    return docs
 
 @flask_app.route("/")
 def index():

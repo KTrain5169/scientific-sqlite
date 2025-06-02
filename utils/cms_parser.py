@@ -7,6 +7,12 @@ from config.settings import settings
 from pydantic import BaseModel
 import markdown
 
+try:
+    from jsonschema import validate, ValidationError
+except ImportError:
+    validate = None
+    ValidationError = Exception
+
 def load_schema(collection_path: str) -> Any:
     """
     Look for a schema.py or schema.json file in the collection_path and load it.
@@ -15,7 +21,9 @@ def load_schema(collection_path: str) -> Any:
     """
     schema_py = os.path.join(collection_path, "schema.py")
     schema_json = os.path.join(collection_path, "schema.json")
-    if os.path.exists(schema_py):
+    if os.path.exists(schema_py) and os.path.exists(schema_json):
+        raise IndexError(f"Both schema.py and schema.json exists in the collection path {collection_path}. Please delete one.")
+    elif os.path.exists(schema_py):
         spec = importlib.util.spec_from_file_location("schema", schema_py)
         if spec is None or spec.loader is None:
             return None
@@ -51,19 +59,30 @@ def parse_collection(collection_path: str) -> List[Dict[str, Any]]:
             body = post.content
 
             # Validate against schema if available and if CMS_SCHEMA_VALIDATION is not "off"
-            if schema and callable(schema):
-                try:
-                    validated = schema(**data)
-                    if isinstance(validated, BaseModel):
-                        data = validated.dict()
-                    else:
-                        data = getattr(validated, "__dict__", data)
-                except Exception as e:
-                    msg = f"Schema validation error for file {file_path}: {e}"
-                    if settings.CMS_SCHEMA_VALIDATION.lower() == "enforce":
-                        raise ValueError(msg)
-                    elif settings.CMS_SCHEMA_VALIDATION.lower() == "warn":
-                        print("WARNING:", msg)
+            if schema:
+                if callable(schema):
+                    try:
+                        validated = schema(**data)
+                        if isinstance(validated, BaseModel):
+                            data = validated.dict()
+                        else:
+                            data = getattr(validated, "__dict__", data)
+                    except Exception as e:
+                        msg = f"Schema validation error for file {file_path}: {e}"
+                        if settings.CMS_SCHEMA_VALIDATION.lower() == "enforce":
+                            raise ValueError(msg)
+                        elif settings.CMS_SCHEMA_VALIDATION.lower() == "warn":
+                            print("WARNING:", msg)
+                elif isinstance(schema, dict) and validate is not None:
+                    # Use jsonschema for validation
+                    try:
+                        validate(instance=data, schema=schema)
+                    except ValidationError as e:
+                        msg = f"JSON schema validation error for file {file_path}: {e}"
+                        if settings.CMS_SCHEMA_VALIDATION.lower() == "enforce":
+                            raise ValueError(msg)
+                        elif settings.CMS_SCHEMA_VALIDATION.lower() == "warn":
+                            print("WARNING:", msg)
             
             # Compile the Markdown content to HTML
             compiled_body = markdown.markdown(body)
@@ -82,7 +101,7 @@ def parse_collection(collection_path: str) -> List[Dict[str, Any]]:
                 if dir_part:
                     url_path = f"{dir_part}/{base_name}/"
                 else:
-                    url_path = f"{base_name}"
+                    url_path = f"{base_name}/"
             
             docs.append({
                 "filename": url_path,

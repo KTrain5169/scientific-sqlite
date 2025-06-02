@@ -1,5 +1,5 @@
 collections = {
-    "blog": {
+    "Blog": {
         "path": "content/blog",
         "schema": "schema.json"
     }

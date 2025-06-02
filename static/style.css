@@ -31,6 +31,21 @@ nav a:hover {
     text-decoration: underline;
 }
 
+a:link {
+    color: green;
+    text-decoration: underline;
+}
+
+a:link:visited {
+    color: greenyellow;
+    text-decoration: underline;
+}
+
+a:link:hover {
+    color: yellow;
+    text-decoration: underline;
+}
+
 main {
     padding: 2rem;
     min-height: 80vh;

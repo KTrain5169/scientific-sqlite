@@ -3,12 +3,12 @@
 {% block title %}{{ collection_name }} collection{% endblock %}
 
 {% block content %}
-  <h2>{{ collection_name }} Collection</h2>
+  <h2>{{ collection_name }} collection</h2>
   {% if docs %}
     <ul class="doc-list">
       {% for doc in docs %}
         <li>
-          <h3>{{ doc.metadata.title }}</h3>
+          <h3>{{ doc.metadata.title or "Untitled item" }}</h3>
           <p>{{ doc.metadata.description or "No description provided." }}</p>
           {% if doc.metadata.date %}
             <small>Published on {{ doc.metadata.date }}</small>
