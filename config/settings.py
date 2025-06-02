@@ -19,7 +19,4 @@ class Settings(BaseSettings):
     # Valid values are "off", "warn", and "enforce"
     CMS_SCHEMA_VALIDATION: str = "warn"
 
-    class Config:
-        env_file = ".env"
-
 settings = Settings()

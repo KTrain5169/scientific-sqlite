@@ -45,6 +45,10 @@ def _get_cms_parsed(collection_name: str) -> List[Dict[str, Any]]:
 def index():
     return render_template("index.html")
 
+@flask_app.route('/ws-viewer')
+def ws_viewer():
+    return render_template("ws-viewer.html")
+
 @flask_app.route("/sample/<name>", methods=["GET", "POST"])
 def sample(name):
     if request.method == "POST":
