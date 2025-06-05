@@ -124,7 +124,6 @@ if settings.ENABLE_API:
     logger.info("Route %s specified as API Route", api_prefix)
 
 if settings.ENABLE_FRONTEND:
-    from fastapi.middleware.wsgi import WSGIMiddleware
     app.mount("/", WSGIMiddleware(flask_app))
     logger.info("Mounted Flask app at '/' specified as Dynamic/CMS Route")
 
