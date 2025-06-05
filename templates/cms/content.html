@@ -1,0 +1,9 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ doc.metadata.title }} - {{ collection_name }} collection - Scientific SQLite{% endblock %}
+
+{% block content %}
+  <h1>{{ doc.metadata.title }}</h1>
+  <h3>Part of the "<a href="/cms/{{ collection_name }}">{{ collection_name }}</a>" collection.</h3>
+  <div>{{ doc.body | safe }}</div>
+{% endblock %}

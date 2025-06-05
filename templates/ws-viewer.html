@@ -1,0 +1,10 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}WebSocket Viewer - Scientific SQLite{% endblock %}
+
+{% block content %}
+  <h2>WebSocket Server Viewer</h2>
+  <div id="status">Connecting...</div>
+  <ul id="messages"></ul>
+  <script src="/static/ws_viewer.js"></script>
+{% endblock %}
