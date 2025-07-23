@@ -1,0 +1,14 @@
+export default {
+  env: {
+    node: true,
+    es2021: true
+  },
+  extends: 'eslint:recommended',
+  parserOptions: {
+    ecmaVersion: 2022,
+    sourceType: 'module'
+  },
+  rules: {
+    // Add or adjust custom rules here.
+  }
+}
