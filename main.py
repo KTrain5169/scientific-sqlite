@@ -18,7 +18,7 @@ from websocket.server import router as websocket_router
 
 # Import CMS config and parser
 from content.cms_list import collections
-from utils.cms_parser import parse_collection
+from scientific_cms import parse_collection
 
 # Create a logger but delay the handler configuration until after CLI args are parsed.
 logger = logging.getLogger("frontend")
@@ -69,11 +69,14 @@ def cms_collection(collection_name):
     if not collection_key:
         abort(404, description="Collection not found")
     coll = collections[collection_key]
-    # Use the CMS parser to load the documents for this collection.
+    
+    # Use the CMS library to load the documents for this collection
     docs = parse_collection(coll["path"])
-    # Filter docs: require that if a 'published' field exists in metadata it must be True.
-    filtered_docs = [doc for doc in docs if doc.get("metadata", {}).get("published", True)]
-    # Automatically compute collection_base from the collection path.
+    
+    # Filter docs: only show published items
+    filtered_docs = [doc for doc in docs if doc.metadata.get("published", True)]
+    
+    # Automatically compute collection_base from the collection path
     collection_base = os.path.basename(os.path.normpath(coll["path"]))
     return render_template("cms/listing.html",
                            docs=filtered_docs,
@@ -87,13 +90,16 @@ def cms_item(collection_name, item_path):
     if not collection_key:
         abort(404, description="Collection not found")
     coll = collections[collection_key]
-    # Parse the entire collection
+    
+    # Parse the entire collection using the library
     docs = parse_collection(coll["path"])
+    
     # Look for a document with a matching filename
-    doc = next((doc for doc in docs if doc["filename"].lstrip("/") == item_path), None)
+    doc = next((doc for doc in docs if doc.filename.lstrip("/") == item_path), None)
     if not doc:
         abort(404, description="Content item not found")
-    # Render a template (for example, cms/content.html) for the individual item
+    
+    # Render a template for the individual item
     return render_template("cms/content.html", doc=doc, collection_name=collection_key)
 
 # Custom error handlers for Flask
